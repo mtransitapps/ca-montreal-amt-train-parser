@@ -22,8 +22,8 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		if (args == null || args.length == 0) {
 			args = new String[3];
 			args[0] = "input/gtfs.zip";
-			args[1] = "../ca-montreal-amt-train/res/raw/";
-			args[2] = ""; // files prefix
+			args[1] = "../ca-montreal-amt-train-android/res/raw/";
+			args[2] = ""; // files-prefix
 		}
 		new MontrealAMTTrainAgencyTools().start(args);
 	}
