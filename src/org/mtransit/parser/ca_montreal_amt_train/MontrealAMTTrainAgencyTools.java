@@ -51,10 +51,8 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		mTrip.setHeadsignString(stationName, directionId);
 	}
 
-	private static final String DIRECTION = "Direction ";
-
 	private String cleanTripHeadsign(String gTripHeading) {
-		return cleanStopName(gTripHeading.substring(DIRECTION.length()));
+		return MSpec.cleanLabelFR(gTripHeading.substring("Direction ".length()));
 	}
 
 	private static List<String> VH = Arrays.asList(new String[] { "Beaconsfield", "Hudson", "Vaudreuil" });
@@ -78,8 +76,6 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	public static final String PLACE_CHAR_STATION = "gare";
 	public static final int PLACE_CHAR_STATION_LENGTH = PLACE_CHAR_STATION.length();
 
-	private static final String PLACE_CHAR_SAINT = "saint";
-	private static final String PLACE_CHAR_SAINT_REPLACEMENT = "st";
 
 	private static final String GARE_CENTRALE = "Gare Centrale".toLowerCase(Locale.ENGLISH);
 
@@ -89,9 +85,8 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		if (!GARE_CENTRALE.equals(result) && result.startsWith(PLACE_CHAR_STATION)) {
 			result = result.substring(PLACE_CHAR_STATION_LENGTH);
 		}
-		result = result.replace(PLACE_CHAR_SAINT, PLACE_CHAR_SAINT_REPLACEMENT);
 		result = MSpec.CLEAN_EN_DASHES.matcher(result).replaceAll(MSpec.CLEAN_EN_DASHES_REPLACEMENT);
-		return super.cleanStopName(result);
+		return super.cleanStopNameFR(result);
 	}
 
 	@Override
