@@ -22,7 +22,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		if (args == null || args.length == 0) {
 			args = new String[3];
 			args[0] = "input/gtfs.zip";
-			args[1] = "../ca-montreal-amt-train-android/res/raw/";
+			args[1] = "../../mtransitapps/ca-montreal-amt-train-android/res/raw/";
 			args[2] = ""; // files-prefix
 		}
 		new MontrealAMTTrainAgencyTools().start(args);
@@ -42,6 +42,16 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 			return true;
 		}
 		return super.excludeRoute(gRoute);
+	}
+
+	@Override
+	public String getRouteLongName(GRoute gRoute) {
+		return cleanRouteLongName(gRoute.route_long_name);
+	}
+
+	private String cleanRouteLongName(String result) {
+		result = MSpec.SAINT.matcher(result).replaceAll(MSpec.SAINT_REPLACEMENT);
+		return MSpec.cleanLabel(result);
 	}
 
 	@Override
