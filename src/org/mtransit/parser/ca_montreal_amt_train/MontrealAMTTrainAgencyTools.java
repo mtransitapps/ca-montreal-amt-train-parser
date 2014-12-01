@@ -61,8 +61,9 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		mTrip.setHeadsignString(stationName, directionId);
 	}
 
-	private String cleanTripHeadsign(String gTripHeading) {
-		return MSpec.cleanLabelFR(gTripHeading.substring("Direction ".length()));
+	@Override
+	public String cleanTripHeadsign(String tripHeading) {
+		return MSpec.cleanLabelFR(tripHeading.substring("Direction ".length()));
 	}
 
 	private static List<String> VH = Arrays.asList(new String[] { "Beaconsfield", "Hudson", "Vaudreuil" });
