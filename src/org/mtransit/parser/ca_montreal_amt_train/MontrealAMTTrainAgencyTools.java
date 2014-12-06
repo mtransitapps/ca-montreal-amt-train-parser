@@ -88,14 +88,10 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	public static final int PLACE_CHAR_STATION_LENGTH = PLACE_CHAR_STATION.length();
 
 
-	private static final String GARE_CENTRALE = "Gare Centrale".toLowerCase(Locale.ENGLISH);
 
 	@Override
 	public String cleanStopName(String gStopName) {
 		String result = gStopName.toLowerCase(Locale.ENGLISH);
-		if (!GARE_CENTRALE.equals(result) && result.startsWith(PLACE_CHAR_STATION)) {
-			result = result.substring(PLACE_CHAR_STATION_LENGTH);
-		}
 		result = MSpec.CLEAN_EN_DASHES.matcher(result).replaceAll(MSpec.CLEAN_EN_DASHES_REPLACEMENT);
 		return super.cleanStopNameFR(result);
 	}
