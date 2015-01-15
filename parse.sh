@@ -1,7 +1,6 @@
 #!/bin/bash
 echo ">> Parsing...";
 PARSER_DIRECTORY="../parser";
-PARSER_DIRECTORY="../parser-dev";
 CLASS=$(cat "parser_class")
 java -Xms2048m -Xmx8192m -Dfile.encoding=UTF-8 \
 -classpath \
