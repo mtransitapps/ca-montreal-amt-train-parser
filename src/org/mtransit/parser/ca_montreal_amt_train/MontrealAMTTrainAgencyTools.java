@@ -129,16 +129,17 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public String getStopCode(GStop gStop) {
-		if (gStop.stop_code.equals("0")) {
-			System.out.println("stop ID 0: " + gStop.stop_code + ", " + gStop.stop_id + ", " + gStop.stop_name);
-			System.exit(-1);
-		}
-		return super.getStopCode(gStop);
+		return gStop.stop_id; // using stop ID as stop code (useful to match with GTFS real-time)
 	}
 
 	@Override
 	public int getStopId(GStop gStop) {
-		return Integer.valueOf(getStopCode(gStop)); // using stop code as stop ID
+		String stopCode = gStop.stop_code;
+		if (stopCode == null || stopCode.equals("0")) {
+			System.out.println("stop ID 0: " + gStop.stop_code + ", " + gStop.stop_id + ", " + gStop.stop_name);
+			System.exit(-1);
+		}
+		return Integer.valueOf(stopCode); // using stop code as stop ID
 	}
 
 }
