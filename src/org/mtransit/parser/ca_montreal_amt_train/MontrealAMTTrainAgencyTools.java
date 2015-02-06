@@ -75,6 +75,13 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		return super.excludeRoute(gRoute);
 	}
 
+	private static final String AGENCY_COLOR = "20558A";
+
+	@Override
+	public String getAgencyColor() {
+		return AGENCY_COLOR;
+	}
+
 	@Override
 	public String getRouteLongName(GRoute gRoute) {
 		return cleanRouteLongName(gRoute.route_long_name);
