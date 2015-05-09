@@ -3,8 +3,9 @@ package org.mtransit.parser.ca_montreal_amt_train;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
+import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.mtransit.parser.DefaultAgencyTools;
 import org.mtransit.parser.Utils;
 import org.mtransit.parser.gtfs.data.GCalendar;
@@ -95,9 +96,11 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		mTrip.setHeadsignString(stationName, directionId);
 	}
 
+	private static final Pattern DIRECTION = Pattern.compile("(direction )", Pattern.CASE_INSENSITIVE);
 	@Override
 	public String cleanTripHeadsign(String tripHeading) {
-		return MSpec.cleanLabelFR(tripHeading.substring("Direction ".length()));
+		tripHeading = DIRECTION.matcher(tripHeading).replaceAll(StringUtils.EMPTY);
+		return MSpec.cleanLabelFR(tripHeading);
 	}
 
 	private static List<String> VH = Arrays.asList(new String[] { "Beaconsfield", "Hudson", "Vaudreuil" });
@@ -118,16 +121,13 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		return super.mergeHeadsign(mTrip, mTripToMerge);
 	}
 
-	public static final String PLACE_CHAR_STATION = "gare";
-	public static final int PLACE_CHAR_STATION_LENGTH = PLACE_CHAR_STATION.length();
-
-
+	private static final Pattern GARE = Pattern.compile("(gare )", Pattern.CASE_INSENSITIVE);
 
 	@Override
 	public String cleanStopName(String gStopName) {
-		String result = gStopName.toLowerCase(Locale.ENGLISH);
-		result = MSpec.CLEAN_EN_DASHES.matcher(result).replaceAll(MSpec.CLEAN_EN_DASHES_REPLACEMENT);
-		return super.cleanStopNameFR(result);
+		gStopName = GARE.matcher(gStopName).replaceAll(StringUtils.EMPTY);
+		gStopName = MSpec.CLEAN_EN_DASHES.matcher(gStopName).replaceAll(MSpec.CLEAN_EN_DASHES_REPLACEMENT);
+		return super.cleanStopNameFR(gStopName);
 	}
 
 	@Override
