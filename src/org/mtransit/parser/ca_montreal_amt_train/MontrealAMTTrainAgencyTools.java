@@ -16,7 +16,7 @@ import org.mtransit.parser.gtfs.data.GStop;
 import org.mtransit.parser.gtfs.data.GTrip;
 import org.mtransit.parser.mt.data.MAgency;
 import org.mtransit.parser.mt.data.MRoute;
-import org.mtransit.parser.mt.data.MSpec;
+import org.mtransit.parser.CleanUtils;
 import org.mtransit.parser.mt.data.MTrip;
 
 // http://www.amt.qc.ca/developers/
@@ -37,11 +37,11 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public void start(String[] args) {
-		System.out.printf("Generating AMT train data...\n");
+		System.out.printf("\nGenerating AMT train data...");
 		long start = System.currentTimeMillis();
 		this.serviceIds = extractUsefulServiceIds(args, this);
 		super.start(args);
-		System.out.printf("Generating AMT train data... DONE in %s.\n", Utils.getPrettyDuration(System.currentTimeMillis() - start));
+		System.out.printf("\nGenerating AMT train data... DONE in %s.\n", Utils.getPrettyDuration(System.currentTimeMillis() - start));
 	}
 
 	@Override
@@ -86,8 +86,8 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	}
 
 	private String cleanRouteLongName(String result) {
-		result = MSpec.SAINT.matcher(result).replaceAll(MSpec.SAINT_REPLACEMENT);
-		return MSpec.cleanLabel(result);
+		result = CleanUtils.SAINT.matcher(result).replaceAll(CleanUtils.SAINT_REPLACEMENT);
+		return CleanUtils.cleanLabel(result);
 	}
 
 	@Override
@@ -99,7 +99,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	@Override
 	public String cleanTripHeadsign(String tripHeading) {
 		tripHeading = DIRECTION.matcher(tripHeading).replaceAll(StringUtils.EMPTY);
-		return MSpec.cleanLabelFR(tripHeading);
+		return CleanUtils.cleanLabelFR(tripHeading);
 	}
 
 	private static List<String> VH = Arrays.asList(new String[] { "Beaconsfield", "Hudson", "Vaudreuil" });
@@ -125,7 +125,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	@Override
 	public String cleanStopName(String gStopName) {
 		gStopName = GARE.matcher(gStopName).replaceAll(StringUtils.EMPTY);
-		gStopName = MSpec.CLEAN_EN_DASHES.matcher(gStopName).replaceAll(MSpec.CLEAN_EN_DASHES_REPLACEMENT);
+		gStopName = CleanUtils.CLEAN_EN_DASHES.matcher(gStopName).replaceAll(CleanUtils.CLEAN_EN_DASHES_REPLACEMENT);
 		return super.cleanStopNameFR(gStopName);
 	}
 
@@ -143,5 +143,4 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		}
 		return Integer.valueOf(stopCode); // using stop code as stop ID
 	}
-
 }
