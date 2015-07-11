@@ -134,13 +134,32 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		return gStop.stop_id; // using stop ID as stop code (useful to match with GTFS real-time)
 	}
 
+	private static final String ZERO = "0";
+
+	private static final String A = "A";
+	private static final String B = "B";
+	private static final String C = "C";
+	private static final String D = "D";
+
 	@Override
 	public int getStopId(GStop gStop) {
 		String stopCode = gStop.stop_code;
-		if (stopCode == null || stopCode.equals("0")) {
-			System.out.println("stop ID 0: " + gStop.stop_code + ", " + gStop.stop_id + ", " + gStop.stop_name);
+		if (stopCode == null || stopCode.equals(ZERO)) {
+			System.out.printf("\nUnexpected stop ID %s!\n", gStop);
 			System.exit(-1);
 		}
-		return Integer.valueOf(stopCode); // using stop code as stop ID
+		int stopId = Integer.valueOf(stopCode); // using stop code as stop ID
+		if (gStop.stop_id.endsWith(A)) {
+			return 1000000 + stopId;
+		} else if (gStop.stop_id.endsWith(B)) {
+			return 2000000 + stopId;
+		} else if (gStop.stop_id.endsWith(C)) {
+			return 3000000 + stopId;
+		} else if (gStop.stop_id.endsWith(D)) {
+			return 4000000 + stopId;
+		}
+		System.out.printf("\nUnexpected stop ID %s!\n", gStop);
+		System.exit(-1);
+		return -1;
 	}
 }
