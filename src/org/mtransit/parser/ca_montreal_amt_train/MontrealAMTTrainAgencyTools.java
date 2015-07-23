@@ -82,7 +82,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public String getRouteLongName(GRoute gRoute) {
-		return cleanRouteLongName(gRoute.route_long_name);
+		return cleanRouteLongName(gRoute.getRouteLongName());
 	}
 
 	private String cleanRouteLongName(String result) {
@@ -92,7 +92,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public void setTripHeadsign(MRoute mRoute, MTrip mTrip, GTrip gTrip, GSpec gtfs) {
-		mTrip.setHeadsignString(cleanTripHeadsign(gTrip.trip_headsign), gTrip.direction_id);
+		mTrip.setHeadsignString(cleanTripHeadsign(gTrip.getTripHeadsign()), gTrip.getDirectionId());
 	}
 
 	private static final Pattern DIRECTION = Pattern.compile("(direction )", Pattern.CASE_INSENSITIVE);
@@ -131,7 +131,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public String getStopCode(GStop gStop) {
-		return gStop.stop_id; // using stop ID as stop code (useful to match with GTFS real-time)
+		return gStop.getStopId(); // using stop ID as stop code (useful to match with GTFS real-time)
 	}
 
 	private static final String ZERO = "0";
@@ -143,19 +143,19 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public int getStopId(GStop gStop) {
-		String stopCode = gStop.stop_code;
+		String stopCode = gStop.getStopCode();
 		if (stopCode == null || stopCode.equals(ZERO)) {
 			System.out.printf("\nUnexpected stop ID %s!\n", gStop);
 			System.exit(-1);
 		}
 		int stopId = Integer.valueOf(stopCode); // using stop code as stop ID
-		if (gStop.stop_id.endsWith(A)) {
+		if (gStop.getStopId().endsWith(A)) {
 			return 1000000 + stopId;
-		} else if (gStop.stop_id.endsWith(B)) {
+		} else if (gStop.getStopId().endsWith(B)) {
 			return 2000000 + stopId;
-		} else if (gStop.stop_id.endsWith(C)) {
+		} else if (gStop.getStopId().endsWith(C)) {
 			return 3000000 + stopId;
-		} else if (gStop.stop_id.endsWith(D)) {
+		} else if (gStop.getStopId().endsWith(D)) {
 			return 4000000 + stopId;
 		}
 		System.out.printf("\nUnexpected stop ID %s!\n", gStop);
