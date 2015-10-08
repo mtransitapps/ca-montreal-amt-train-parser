@@ -103,21 +103,26 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	}
 
 	private static List<String> VH = Arrays.asList(new String[] { "Beaconsfield", "Hudson", "Vaudreuil" });
-	private static String VH_HV = "Vaudreuil / Hudson / Beaconsfield";
+	private static String VH_HV = "Hudson";
 	private static List<String> DM = Arrays.asList(new String[] { "Roxboro-Pierrefonds", "Deux-Montagnes" });
-	private static String DM_HV = "Deux-Montagnes / Roxboro-Pierrefonds";
+	private static String DM_HV = "Deux-Montagnes";
 
 	@Override
 	public boolean mergeHeadsign(MTrip mTrip, MTrip mTripToMerge) {
-		if (VH.contains(mTrip.getHeadsignValue()) && VH.contains(mTripToMerge.getHeadsignValue())) {
-			mTrip.setHeadsignString(VH_HV, mTrip.getHeadsignId());
-			return true;
+		if (mTrip.getRouteId() == 1l) { // VH
+			if (VH.contains(mTrip.getHeadsignValue()) || VH.contains(mTripToMerge.getHeadsignValue())) {
+				mTrip.setHeadsignString(VH_HV, mTrip.getHeadsignId());
+				return true;
+			}
+		} else if (mTrip.getRouteId() == 2l) { // DM
+			if (DM.contains(mTrip.getHeadsignValue()) || DM.contains(mTripToMerge.getHeadsignValue())) {
+				mTrip.setHeadsignString(DM_HV, mTrip.getHeadsignId());
+				return true;
+			}
 		}
-		if (DM.contains(mTrip.getHeadsignValue()) && DM.contains(mTripToMerge.getHeadsignValue())) {
-			mTrip.setHeadsignString(DM_HV, mTrip.getHeadsignId());
-			return true;
-		}
-		return super.mergeHeadsign(mTrip, mTripToMerge);
+		System.out.printf("\n%s: Couldn't merge %s and %s!", mTrip.getRouteId(), mTrip, mTripToMerge);
+		System.exit(-1);
+		return false;
 	}
 
 	private static final Pattern GARE = Pattern.compile("(gare )", Pattern.CASE_INSENSITIVE);
