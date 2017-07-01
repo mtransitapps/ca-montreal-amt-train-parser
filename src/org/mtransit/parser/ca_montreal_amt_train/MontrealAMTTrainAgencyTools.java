@@ -19,8 +19,8 @@ import org.mtransit.parser.mt.data.MRoute;
 import org.mtransit.parser.CleanUtils;
 import org.mtransit.parser.mt.data.MTrip;
 
-// http://www.amt.qc.ca/developers/
-// http://www.amt.qc.ca/xdata/trains/google_transit.zip
+// https://rtm.quebec/en/about/open-data
+// https://rtm.quebec/xdata/trains/google_transit.zip
 public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	public static void main(String[] args) {
@@ -102,21 +102,24 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		return CleanUtils.cleanLabelFR(tripHeading);
 	}
 
-	private static List<String> VH = Arrays.asList(new String[] { "Beaconsfield", "Hudson", "Vaudreuil" });
-	private static String VH_HV = "Hudson";
-	private static List<String> DM = Arrays.asList(new String[] { "Roxboro-Pierrefonds", "Deux-Montagnes" });
-	private static String DM_HV = "Deux-Montagnes";
-
 	@Override
 	public boolean mergeHeadsign(MTrip mTrip, MTrip mTripToMerge) {
-		if (mTrip.getRouteId() == 1l) { // VH
-			if (VH.contains(mTrip.getHeadsignValue()) || VH.contains(mTripToMerge.getHeadsignValue())) {
-				mTrip.setHeadsignString(VH_HV, mTrip.getHeadsignId());
+		List<String> headsignsValues = Arrays.asList(mTrip.getHeadsignValue(), mTripToMerge.getHeadsignValue());
+		if (mTrip.getRouteId() == 1l) {
+			if (Arrays.asList( //
+					"Beaconsfield", //
+					"Hudson", //
+					"Vaudreuil" //
+			).containsAll(headsignsValues)) {
+				mTrip.setHeadsignString("Hudson", mTrip.getHeadsignId());
 				return true;
 			}
-		} else if (mTrip.getRouteId() == 2l) { // DM
-			if (DM.contains(mTrip.getHeadsignValue()) || DM.contains(mTripToMerge.getHeadsignValue())) {
-				mTrip.setHeadsignString(DM_HV, mTrip.getHeadsignId());
+		} else if (mTrip.getRouteId() == 2l) {
+			if (Arrays.asList( //
+					"Deux-Montagnes", //
+					"Roxboro-Pierrefonds" //
+			).containsAll(headsignsValues)) {
+				mTrip.setHeadsignString("Deux-Montagnes", mTrip.getHeadsignId());
 				return true;
 			}
 		}
