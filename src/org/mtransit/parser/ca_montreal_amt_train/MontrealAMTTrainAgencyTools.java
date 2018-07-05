@@ -73,7 +73,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		return MAgency.ROUTE_TYPE_TRAIN;
 	}
 
-	private static final String AGENCY_COLOR = "20558A";
+	private static final String AGENCY_COLOR = "1F1F1F"; // DARK GRAY (from GTFS)
 
 	@Override
 	public String getAgencyColor() {
@@ -96,6 +96,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	}
 
 	private static final Pattern DIRECTION = Pattern.compile("(direction )", Pattern.CASE_INSENSITIVE);
+
 	@Override
 	public String cleanTripHeadsign(String tripHeading) {
 		tripHeading = DIRECTION.matcher(tripHeading).replaceAll(StringUtils.EMPTY);
