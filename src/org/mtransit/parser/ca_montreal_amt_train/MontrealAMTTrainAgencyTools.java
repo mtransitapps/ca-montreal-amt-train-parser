@@ -19,8 +19,8 @@ import org.mtransit.parser.mt.data.MRoute;
 import org.mtransit.parser.CleanUtils;
 import org.mtransit.parser.mt.data.MTrip;
 
-// https://rtm.quebec/en/about/open-data
-// https://rtm.quebec/xdata/trains/google_transit.zip
+// https://exo.quebec/en/about/open-data
+// https://exo.quebec/xdata/trains/google_transit.zip
 public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	public static void main(String[] args) {
@@ -37,11 +37,11 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public void start(String[] args) {
-		System.out.printf("\nGenerating AMT train data...");
+		System.out.printf("\nGenerating exo train data...");
 		long start = System.currentTimeMillis();
 		this.serviceIds = extractUsefulServiceIds(args, this);
 		super.start(args);
-		System.out.printf("\nGenerating AMT train data... DONE in %s.\n", Utils.getPrettyDuration(System.currentTimeMillis() - start));
+		System.out.printf("\nGenerating exo train data... DONE in %s.\n", Utils.getPrettyDuration(System.currentTimeMillis() - start));
 	}
 
 	@Override
@@ -111,19 +111,26 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	@Override
 	public boolean mergeHeadsign(MTrip mTrip, MTrip mTripToMerge) {
 		List<String> headsignsValues = Arrays.asList(mTrip.getHeadsignValue(), mTripToMerge.getHeadsignValue());
-		if (mTrip.getRouteId() == 1l) {
+		if (mTrip.getRouteId() == 1L) {
 			if (Arrays.asList( //
 					"Beaconsfield", //
-					"Hudson", //
 					"Vaudreuil" //
+			).containsAll(headsignsValues)) {
+				mTrip.setHeadsignString("Vaudreuil", mTrip.getHeadsignId());
+				return true;
+			}
+			if (Arrays.asList( //
+					"Beaconsfield", //
+					"Vaudreuil", //
+					"Hudson" //
 			).containsAll(headsignsValues)) {
 				mTrip.setHeadsignString("Hudson", mTrip.getHeadsignId());
 				return true;
 			}
-		} else if (mTrip.getRouteId() == 2l) {
+		} else if (mTrip.getRouteId() == 2L) {
 			if (Arrays.asList( //
-					"Deux-Montagnes", //
-					"Roxboro-Pierrefonds" //
+					"Roxboro-Pierrefonds", //
+					"Deux-Montagnes" //
 			).containsAll(headsignsValues)) {
 				mTrip.setHeadsignString("Deux-Montagnes", mTrip.getHeadsignId());
 				return true;

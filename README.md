@@ -1,4 +1,4 @@
 ca-montreal-amt-train-parser
 ============================
 
-Parser for Montreal AMT Train data.
+Parser for Montreal exo Train data.
