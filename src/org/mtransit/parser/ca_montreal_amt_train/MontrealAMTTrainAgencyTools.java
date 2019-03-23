@@ -104,6 +104,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public String cleanTripHeadsign(String tripHeading) {
+		tripHeading = GARE.matcher(tripHeading).replaceAll(StringUtils.EMPTY);
 		tripHeading = DIRECTION.matcher(tripHeading).replaceAll(StringUtils.EMPTY);
 		return CleanUtils.cleanLabelFR(tripHeading);
 	}
@@ -111,7 +112,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	@Override
 	public boolean mergeHeadsign(MTrip mTrip, MTrip mTripToMerge) {
 		List<String> headsignsValues = Arrays.asList(mTrip.getHeadsignValue(), mTripToMerge.getHeadsignValue());
-		if (mTrip.getRouteId() == 1L) {
+		if (mTrip.getRouteId() == 1L) { // exo1 - Vaudreuil-Hudson
 			if (Arrays.asList( //
 					"Beaconsfield", //
 					"Vaudreuil" //
@@ -127,7 +128,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 				mTrip.setHeadsignString("Hudson", mTrip.getHeadsignId());
 				return true;
 			}
-		} else if (mTrip.getRouteId() == 2L) {
+		} else if (mTrip.getRouteId() == 2L) { // exo6 - Deux-Montagnes
 			if (Arrays.asList( //
 					"Roxboro-Pierrefonds", //
 					"Deux-Montagnes" //
@@ -135,8 +136,17 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 				mTrip.setHeadsignString("Deux-Montagnes", mTrip.getHeadsignId());
 				return true;
 			}
+		} else if (mTrip.getRouteId() == 4L) { // exo2 - St-Jérôme
+			if (Arrays.asList( //
+					"Concorde", //
+					"Parc", //
+					"Lucien-L'Allier" //
+			).containsAll(headsignsValues)) {
+				mTrip.setHeadsignString("Lucien-L'Allier", mTrip.getHeadsignId());
+				return true;
+			}
 		}
-		System.out.printf("\n%s: Couldn't merge %s and %s!", mTrip.getRouteId(), mTrip, mTripToMerge);
+		System.out.printf("\n%s: Couldn't merge %s and %s!\n", mTrip.getRouteId(), mTrip, mTripToMerge);
 		System.exit(-1);
 		return false;
 	}
