@@ -102,8 +102,11 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	private static final Pattern DIRECTION = Pattern.compile("(direction )", Pattern.CASE_INSENSITIVE);
 
+	private static final Pattern STARTS_WITH_SLASH = Pattern.compile("(^[^/]+/( )?)", Pattern.CASE_INSENSITIVE);
+
 	@Override
 	public String cleanTripHeadsign(String tripHeading) {
+		tripHeading = STARTS_WITH_SLASH.matcher(tripHeading).replaceAll(StringUtils.EMPTY);
 		tripHeading = GARE.matcher(tripHeading).replaceAll(StringUtils.EMPTY);
 		tripHeading = DIRECTION.matcher(tripHeading).replaceAll(StringUtils.EMPTY);
 		return CleanUtils.cleanLabelFR(tripHeading);
