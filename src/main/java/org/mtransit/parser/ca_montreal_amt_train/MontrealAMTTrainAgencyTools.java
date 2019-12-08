@@ -148,6 +148,14 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 				mTrip.setHeadsignString("Lucien-L'Allier", mTrip.getHeadsignId());
 				return true;
 			}
+		} else if (mTrip.getRouteId() == 6L) { // exo5 - Mascouche
+			if (Arrays.asList( //
+					"Ahuntsic", //
+					"Centrale" //
+			).containsAll(headsignsValues)) {
+				mTrip.setHeadsignString("Centrale", mTrip.getHeadsignId());
+				return true;
+			}
 		}
 		System.out.printf("\n%s: Couldn't merge %s and %s!\n", mTrip.getRouteId(), mTrip, mTripToMerge);
 		System.exit(-1);
