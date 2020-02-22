@@ -1,12 +1,9 @@
 package org.mtransit.parser.ca_montreal_amt_train;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.regex.Pattern;
-
 import org.apache.commons.lang3.StringUtils;
+import org.mtransit.parser.CleanUtils;
 import org.mtransit.parser.DefaultAgencyTools;
+import org.mtransit.parser.MTLog;
 import org.mtransit.parser.Utils;
 import org.mtransit.parser.gtfs.data.GCalendar;
 import org.mtransit.parser.gtfs.data.GCalendarDate;
@@ -16,8 +13,12 @@ import org.mtransit.parser.gtfs.data.GStop;
 import org.mtransit.parser.gtfs.data.GTrip;
 import org.mtransit.parser.mt.data.MAgency;
 import org.mtransit.parser.mt.data.MRoute;
-import org.mtransit.parser.CleanUtils;
 import org.mtransit.parser.mt.data.MTrip;
+
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.regex.Pattern;
 
 // https://exo.quebec/en/about/open-data
 // https://exo.quebec/xdata/trains/google_transit.zip
@@ -37,11 +38,11 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public void start(String[] args) {
-		System.out.printf("\nGenerating exo train data...");
+		MTLog.log("Generating exo train data...");
 		long start = System.currentTimeMillis();
-		this.serviceIds = extractUsefulServiceIds(args, this);
+		this.serviceIds = extractUsefulServiceIds(args, this, true);
 		super.start(args);
-		System.out.printf("\nGenerating exo train data... DONE in %s.\n", Utils.getPrettyDuration(System.currentTimeMillis() - start));
+		MTLog.log("Generating exo train data... DONE in %s.", Utils.getPrettyDuration(System.currentTimeMillis() - start));
 	}
 
 	@Override
@@ -157,8 +158,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 				return true;
 			}
 		}
-		System.out.printf("\n%s: Couldn't merge %s and %s!\n", mTrip.getRouteId(), mTrip, mTripToMerge);
-		System.exit(-1);
+		MTLog.logFatal("%s: Couldn't merge %s and %s!", mTrip.getRouteId(), mTrip, mTripToMerge);
 		return false;
 	}
 
@@ -187,8 +187,8 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	public int getStopId(GStop gStop) {
 		String stopCode = gStop.getStopCode();
 		if (stopCode == null || stopCode.equals(ZERO)) {
-			System.out.printf("\nUnexpected stop ID %s!\n", gStop);
-			System.exit(-1);
+			MTLog.logFatal("Unexpected stop ID %s!", gStop);
+			return -1;
 		}
 		int stopId = Integer.valueOf(stopCode); // using stop code as stop ID
 		if (gStop.getStopId().endsWith(A)) {
@@ -200,8 +200,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		} else if (gStop.getStopId().endsWith(D)) {
 			return 4000000 + stopId;
 		}
-		System.out.printf("\nUnexpected stop ID %s!\n", gStop);
-		System.exit(-1);
+		MTLog.logFatal("Unexpected stop ID %s!", gStop);
 		return -1;
 	}
 }
