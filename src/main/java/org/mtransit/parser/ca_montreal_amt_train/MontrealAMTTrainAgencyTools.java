@@ -140,6 +140,13 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 				mTrip.setHeadsignString("Deux-Montagnes", mTrip.getHeadsignId());
 				return true;
 			}
+			if (Arrays.asList( //
+					"Bois-Franc", //
+					"Centrale" //
+			).containsAll(headsignsValues)) {
+				mTrip.setHeadsignString("Centrale", mTrip.getHeadsignId());
+				return true;
+			}
 		} else if (mTrip.getRouteId() == 4L) { // exo2 - St-Jérôme
 			if (Arrays.asList( //
 					"Concorde", //
