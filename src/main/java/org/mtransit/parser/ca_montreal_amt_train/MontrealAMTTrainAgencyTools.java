@@ -15,9 +15,7 @@ import org.mtransit.parser.mt.data.MAgency;
 import org.mtransit.parser.mt.data.MRoute;
 import org.mtransit.parser.mt.data.MTrip;
 
-import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.regex.Pattern;
 
 // https://exo.quebec/en/about/open-data
@@ -98,7 +96,10 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public void setTripHeadsign(MRoute mRoute, MTrip mTrip, GTrip gTrip, GSpec gtfs) {
-		mTrip.setHeadsignString(cleanTripHeadsign(gTrip.getTripHeadsign()), gTrip.getDirectionId());
+		mTrip.setHeadsignString(
+				cleanTripHeadsign(gTrip.getTripHeadsign()),
+				gTrip.getDirectionIdOrDefault()
+		);
 	}
 
 	private static final Pattern DIRECTION = Pattern.compile("(direction )", Pattern.CASE_INSENSITIVE);
@@ -114,59 +115,13 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	}
 
 	@Override
+	public boolean directionFinderEnabled() {
+		return true;
+	}
+
+	@Override
 	public boolean mergeHeadsign(MTrip mTrip, MTrip mTripToMerge) {
-		List<String> headsignsValues = Arrays.asList(mTrip.getHeadsignValue(), mTripToMerge.getHeadsignValue());
-		if (mTrip.getRouteId() == 1L) { // exo1 - Vaudreuil-Hudson
-			if (Arrays.asList( //
-					"Beaconsfield", //
-					"Vaudreuil" //
-			).containsAll(headsignsValues)) {
-				mTrip.setHeadsignString("Vaudreuil", mTrip.getHeadsignId());
-				return true;
-			}
-			if (Arrays.asList( //
-					"Beaconsfield", //
-					"Vaudreuil", //
-					"Hudson" //
-			).containsAll(headsignsValues)) {
-				mTrip.setHeadsignString("Hudson", mTrip.getHeadsignId());
-				return true;
-			}
-		} else if (mTrip.getRouteId() == 2L) { // exo6 - Deux-Montagnes
-			if (Arrays.asList( //
-					"Roxboro-Pierrefonds", //
-					"Deux-Montagnes" //
-			).containsAll(headsignsValues)) {
-				mTrip.setHeadsignString("Deux-Montagnes", mTrip.getHeadsignId());
-				return true;
-			}
-			if (Arrays.asList( //
-					"Bois-Franc", //
-					"Centrale" //
-			).containsAll(headsignsValues)) {
-				mTrip.setHeadsignString("Centrale", mTrip.getHeadsignId());
-				return true;
-			}
-		} else if (mTrip.getRouteId() == 4L) { // exo2 - St-Jérôme
-			if (Arrays.asList( //
-					"Concorde", //
-					"Parc", //
-					"Lucien-L'Allier" //
-			).containsAll(headsignsValues)) {
-				mTrip.setHeadsignString("Lucien-L'Allier", mTrip.getHeadsignId());
-				return true;
-			}
-		} else if (mTrip.getRouteId() == 6L) { // exo5 - Mascouche
-			if (Arrays.asList( //
-					"Ahuntsic", //
-					"Centrale" //
-			).containsAll(headsignsValues)) {
-				mTrip.setHeadsignString("Centrale", mTrip.getHeadsignId());
-				return true;
-			}
-		}
-		MTLog.logFatal("%s: Couldn't merge %s and %s!", mTrip.getRouteId(), mTrip, mTripToMerge);
-		return false;
+		throw new MTLog.Fatal("%s: Using direction finder to merge %s and %s!", mTrip.getRouteId(), mTrip, mTripToMerge);
 	}
 
 	private static final Pattern GARE = Pattern.compile("(gare )", Pattern.CASE_INSENSITIVE);
