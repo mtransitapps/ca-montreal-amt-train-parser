@@ -1,13 +1,10 @@
 package org.mtransit.parser.ca_montreal_amt_train;
 
-import org.apache.commons.lang3.StringUtils;
-import org.mtransit.parser.CleanUtils;
+import org.jetbrains.annotations.NotNull;
+import org.mtransit.commons.CleanUtils;
+import org.mtransit.commons.StringUtils;
 import org.mtransit.parser.DefaultAgencyTools;
 import org.mtransit.parser.MTLog;
-import org.mtransit.parser.Utils;
-import org.mtransit.parser.gtfs.data.GCalendar;
-import org.mtransit.parser.gtfs.data.GCalendarDate;
-import org.mtransit.parser.gtfs.data.GRoute;
 import org.mtransit.parser.gtfs.data.GSpec;
 import org.mtransit.parser.gtfs.data.GStop;
 import org.mtransit.parser.gtfs.data.GTrip;
@@ -15,63 +12,31 @@ import org.mtransit.parser.mt.data.MAgency;
 import org.mtransit.parser.mt.data.MRoute;
 import org.mtransit.parser.mt.data.MTrip;
 
-import java.util.HashSet;
+import java.util.Locale;
 import java.util.regex.Pattern;
+
+import static org.mtransit.commons.StringUtils.EMPTY;
 
 // https://exo.quebec/en/about/open-data
 // https://exo.quebec/xdata/trains/google_transit.zip
 public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
-	public static void main(String[] args) {
-		if (args == null || args.length == 0) {
-			args = new String[3];
-			args[0] = "input/gtfs.zip";
-			args[1] = "../../mtransitapps/ca-montreal-amt-train-android/res/raw/";
-			args[2] = ""; // files-prefix
-		}
+	public static void main(@NotNull String[] args) {
 		new MontrealAMTTrainAgencyTools().start(args);
 	}
 
-	private HashSet<String> serviceIds;
-
 	@Override
-	public void start(String[] args) {
-		MTLog.log("Generating exo train data...");
-		long start = System.currentTimeMillis();
-		this.serviceIds = extractUsefulServiceIds(args, this, true);
-		super.start(args);
-		MTLog.log("Generating exo train data... DONE in %s.", Utils.getPrettyDuration(System.currentTimeMillis() - start));
+	public boolean defaultExcludeEnabled() {
+		return true;
 	}
 
+	@NotNull
 	@Override
-	public boolean excludingAll() {
-		return this.serviceIds != null && this.serviceIds.isEmpty();
+	public String getAgencyName() {
+		return "exo";
 	}
 
-	@Override
-	public boolean excludeCalendar(GCalendar gCalendar) {
-		if (this.serviceIds != null) {
-			return excludeUselessCalendar(gCalendar, this.serviceIds);
-		}
-		return super.excludeCalendar(gCalendar);
-	}
-
-	@Override
-	public boolean excludeCalendarDate(GCalendarDate gCalendarDates) {
-		if (this.serviceIds != null) {
-			return excludeUselessCalendarDate(gCalendarDates, this.serviceIds);
-		}
-		return super.excludeCalendarDate(gCalendarDates);
-	}
-
-	@Override
-	public boolean excludeTrip(GTrip gTrip) {
-		if (this.serviceIds != null) {
-			return excludeUselessTrip(gTrip, this.serviceIds);
-		}
-		return super.excludeTrip(gTrip);
-	}
-
+	@NotNull
 	@Override
 	public Integer getAgencyRouteType() {
 		return MAgency.ROUTE_TYPE_TRAIN;
@@ -79,38 +44,38 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	private static final String AGENCY_COLOR = "1F1F1F"; // DARK GRAY (from GTFS)
 
+	@NotNull
 	@Override
 	public String getAgencyColor() {
 		return AGENCY_COLOR;
 	}
 
+	@NotNull
 	@Override
-	public String getRouteLongName(GRoute gRoute) {
-		return cleanRouteLongName(gRoute.getRouteLongName());
-	}
-
-	private String cleanRouteLongName(String result) {
+	public String cleanRouteLongName(@NotNull String result) {
 		result = CleanUtils.SAINT.matcher(result).replaceAll(CleanUtils.SAINT_REPLACEMENT);
 		return CleanUtils.cleanLabel(result);
 	}
 
 	@Override
-	public void setTripHeadsign(MRoute mRoute, MTrip mTrip, GTrip gTrip, GSpec gtfs) {
+	public void setTripHeadsign(@NotNull MRoute mRoute, @NotNull MTrip mTrip, @NotNull GTrip gTrip, @NotNull GSpec gtfs) {
 		mTrip.setHeadsignString(
-				cleanTripHeadsign(gTrip.getTripHeadsign()),
+				cleanTripHeadsign(gTrip.getTripHeadsignOrDefault()),
 				gTrip.getDirectionIdOrDefault()
 		);
 	}
 
-	private static final Pattern DIRECTION = Pattern.compile("(direction )", Pattern.CASE_INSENSITIVE);
+	private static final Pattern MONT_SAINT_HILAIRE_ = CleanUtils.cleanWords("mont-saint-hilaire", "mont-st-hilaire");
+	private static final String MONT_SAINT_HILAIRE_REPLACEMENT = CleanUtils.cleanWordsReplacement("St-Hilaire");
 
 	private static final Pattern STARTS_WITH_SLASH = Pattern.compile("(^[^/]+/( )?)", Pattern.CASE_INSENSITIVE);
 
+	@NotNull
 	@Override
-	public String cleanTripHeadsign(String tripHeading) {
-		tripHeading = STARTS_WITH_SLASH.matcher(tripHeading).replaceAll(StringUtils.EMPTY);
-		tripHeading = GARE.matcher(tripHeading).replaceAll(StringUtils.EMPTY);
-		tripHeading = DIRECTION.matcher(tripHeading).replaceAll(StringUtils.EMPTY);
+	public String cleanTripHeadsign(@NotNull String tripHeading) {
+		tripHeading = MONT_SAINT_HILAIRE_.matcher(tripHeading).replaceAll(MONT_SAINT_HILAIRE_REPLACEMENT);
+		tripHeading = STARTS_WITH_SLASH.matcher(tripHeading).replaceAll(EMPTY);
+		tripHeading = GARE.matcher(tripHeading).replaceAll(EMPTY);
 		return CleanUtils.cleanLabelFR(tripHeading);
 	}
 
@@ -119,22 +84,22 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		return true;
 	}
 
-	@Override
-	public boolean mergeHeadsign(MTrip mTrip, MTrip mTripToMerge) {
-		throw new MTLog.Fatal("%s: Using direction finder to merge %s and %s!", mTrip.getRouteId(), mTrip, mTripToMerge);
-	}
-
 	private static final Pattern GARE = Pattern.compile("(gare )", Pattern.CASE_INSENSITIVE);
 
+	@NotNull
 	@Override
-	public String cleanStopName(String gStopName) {
+	public String cleanStopName(@NotNull String gStopName) {
 		gStopName = GARE.matcher(gStopName).replaceAll(StringUtils.EMPTY);
 		gStopName = CleanUtils.CLEAN_EN_DASHES.matcher(gStopName).replaceAll(CleanUtils.CLEAN_EN_DASHES_REPLACEMENT);
+		gStopName = CleanUtils.cleanBounds(Locale.FRENCH, gStopName);
+		gStopName = CleanUtils.cleanStreetTypesFRCA(gStopName);
 		return CleanUtils.cleanLabelFR(gStopName);
 	}
 
+	@NotNull
 	@Override
-	public String getStopCode(GStop gStop) {
+	public String getStopCode(@NotNull GStop gStop) {
+		//noinspection deprecation
 		return gStop.getStopId(); // using stop ID as stop code (useful to match with GTFS real-time)
 	}
 
@@ -146,23 +111,23 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	private static final String D = "D";
 
 	@Override
-	public int getStopId(GStop gStop) {
+	public int getStopId(@NotNull GStop gStop) {
 		String stopCode = gStop.getStopCode();
-		if (stopCode == null || stopCode.equals(ZERO)) {
-			MTLog.logFatal("Unexpected stop ID %s!", gStop);
-			return -1;
+		if (stopCode.equals(ZERO)) {
+			throw new MTLog.Fatal("Unexpected stop ID %s!", gStop);
 		}
-		int stopId = Integer.valueOf(stopCode); // using stop code as stop ID
-		if (gStop.getStopId().endsWith(A)) {
-			return 1000000 + stopId;
-		} else if (gStop.getStopId().endsWith(B)) {
-			return 2000000 + stopId;
-		} else if (gStop.getStopId().endsWith(C)) {
-			return 3000000 + stopId;
-		} else if (gStop.getStopId().endsWith(D)) {
-			return 4000000 + stopId;
+		int stopId = Integer.parseInt(stopCode); // using stop code as stop ID
+		//noinspection deprecation
+		final String stopId1 = gStop.getStopId();
+		if (stopId1.endsWith(A)) {
+			return 1_000_000 + stopId;
+		} else if (stopId1.endsWith(B)) {
+			return 2_000_000 + stopId;
+		} else if (stopId1.endsWith(C)) {
+			return 3_000_000 + stopId;
+		} else if (stopId1.endsWith(D)) {
+			return 4_000_000 + stopId;
 		}
-		MTLog.logFatal("Unexpected stop ID %s!", gStop);
-		return -1;
+		throw new MTLog.Fatal("Unexpected stop ID %s!", gStop);
 	}
 }
