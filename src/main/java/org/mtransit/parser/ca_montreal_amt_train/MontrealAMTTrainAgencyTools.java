@@ -1,13 +1,14 @@
 package org.mtransit.parser.ca_montreal_amt_train;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.mtransit.commons.CleanUtils;
-import org.mtransit.commons.StringUtils;
 import org.mtransit.parser.DefaultAgencyTools;
 import org.mtransit.parser.MTLog;
 import org.mtransit.parser.gtfs.data.GStop;
 import org.mtransit.parser.mt.data.MAgency;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
@@ -19,6 +20,12 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	public static void main(@NotNull String[] args) {
 		new MontrealAMTTrainAgencyTools().start(args);
+	}
+
+	@Nullable
+	@Override
+	public List<Locale> getSupportedLanguages() {
+		return LANG_FR;
 	}
 
 	@Override
@@ -38,6 +45,11 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		return MAgency.ROUTE_TYPE_TRAIN;
 	}
 
+	@Override
+	public boolean defaultAgencyColorEnabled() {
+		return true;
+	}
+
 	private static final String AGENCY_COLOR = "1F1F1F"; // DARK GRAY (from GTFS)
 
 	@NotNull
@@ -46,11 +58,26 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		return AGENCY_COLOR;
 	}
 
+	@Override
+	public boolean defaultRouteIdEnabled() {
+		return true;
+	}
+
+	@Override
+	public boolean useRouteShortNameForRouteId() {
+		return false; // route ID used to target Twitter news & GTFS RT
+	}
+
+	@Override
+	public boolean defaultRouteLongNameEnabled() {
+		return true;
+	}
+
 	@NotNull
 	@Override
 	public String cleanRouteLongName(@NotNull String result) {
 		result = CleanUtils.SAINT.matcher(result).replaceAll(CleanUtils.SAINT_REPLACEMENT);
-		return CleanUtils.cleanLabel(result);
+		return CleanUtils.cleanLabelFR(result);
 	}
 
 	private static final Pattern MONT_SAINT_HILAIRE_ = CleanUtils.cleanWords("mont-saint-hilaire", "mont-st-hilaire");
@@ -77,7 +104,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	@NotNull
 	@Override
 	public String cleanStopName(@NotNull String gStopName) {
-		gStopName = GARE.matcher(gStopName).replaceAll(StringUtils.EMPTY);
+		gStopName = GARE.matcher(gStopName).replaceAll(EMPTY);
 		gStopName = CleanUtils.CLEAN_EN_DASHES.matcher(gStopName).replaceAll(CleanUtils.CLEAN_EN_DASHES_REPLACEMENT);
 		gStopName = CleanUtils.cleanBounds(Locale.FRENCH, gStopName);
 		gStopName = CleanUtils.cleanStreetTypesFRCA(gStopName);
