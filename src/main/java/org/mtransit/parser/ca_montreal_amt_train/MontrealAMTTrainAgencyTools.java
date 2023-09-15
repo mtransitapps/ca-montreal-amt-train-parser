@@ -2,9 +2,11 @@ package org.mtransit.parser.ca_montreal_amt_train;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.mtransit.commons.CharUtils;
 import org.mtransit.commons.CleanUtils;
 import org.mtransit.parser.DefaultAgencyTools;
 import org.mtransit.parser.MTLog;
+import org.mtransit.parser.gtfs.data.GRoute;
 import org.mtransit.parser.gtfs.data.GStop;
 import org.mtransit.parser.mt.data.MAgency;
 
@@ -15,7 +17,6 @@ import java.util.regex.Pattern;
 import static org.mtransit.commons.StringUtils.EMPTY;
 
 // https://exo.quebec/en/about/open-data
-// https://exo.quebec/xdata/trains/google_transit.zip
 public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	public static void main(@NotNull String[] args) {
@@ -61,6 +62,28 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	@Override
 	public boolean defaultRouteIdEnabled() {
 		return true;
+	}
+
+	@Override
+	public @NotNull String getRouteShortName(@NotNull GRoute gRoute) {
+		final String rsn = gRoute.getRouteShortName();
+		if (!CharUtils.isDigitsOnly(rsn)) {
+			switch (rsn) {
+			case "VH":
+				return "11";
+			case "SJ":
+				return "12";
+			case "SH":
+				return "13";
+			case "CA":
+				return "14";
+			case "MA":
+				return "15";
+			default:
+				throw new MTLog.Fatal("Unexpected route short name for %s", gRoute.toStringPlus());
+			}
+		}
+		return super.getRouteShortName(gRoute);
 	}
 
 	@Override
