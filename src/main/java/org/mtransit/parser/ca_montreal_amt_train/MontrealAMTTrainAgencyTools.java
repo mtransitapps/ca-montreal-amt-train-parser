@@ -4,6 +4,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mtransit.commons.CharUtils;
 import org.mtransit.commons.CleanUtils;
+import org.mtransit.commons.FeatureFlags;
 import org.mtransit.parser.DefaultAgencyTools;
 import org.mtransit.parser.MTLog;
 import org.mtransit.parser.gtfs.data.GRoute;
@@ -14,6 +15,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
+import static org.mtransit.commons.RegexUtils.BEGINNING;
+import static org.mtransit.commons.RegexUtils.DIGIT_CAR;
+import static org.mtransit.commons.RegexUtils.WHITESPACE_CAR;
+import static org.mtransit.commons.RegexUtils.atLeastOne;
+import static org.mtransit.commons.RegexUtils.group;
 import static org.mtransit.commons.StringUtils.EMPTY;
 
 // https://exo.quebec/en/about/open-data
@@ -96,10 +102,13 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		return true;
 	}
 
+	private static final Pattern STARTS_WITH_RSN_ = Pattern.compile(group(BEGINNING + atLeastOne(DIGIT_CAR)) + WHITESPACE_CAR + "-" + WHITESPACE_CAR);
+
 	@NotNull
 	@Override
 	public String cleanRouteLongName(@NotNull String result) {
 		result = CleanUtils.SAINT.matcher(result).replaceAll(CleanUtils.SAINT_REPLACEMENT);
+		result = STARTS_WITH_RSN_.matcher(result).replaceAll(EMPTY);
 		return CleanUtils.cleanLabelFR(result);
 	}
 
@@ -137,6 +146,9 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	@NotNull
 	@Override
 	public String getStopCode(@NotNull GStop gStop) {
+		if (FeatureFlags.F_EXPORT_GTFS_ID_HASH_INT) {
+			return EMPTY; // remove stop code (not visible on agency info) // super.getStopCode(gStop);
+		}
 		//noinspection deprecation
 		return gStop.getStopId(); // using stop ID as stop code (useful to match with GTFS real-time)
 	}
