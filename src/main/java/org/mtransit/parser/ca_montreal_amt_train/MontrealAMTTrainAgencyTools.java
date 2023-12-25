@@ -1,5 +1,12 @@
 package org.mtransit.parser.ca_montreal_amt_train;
 
+import static org.mtransit.commons.RegexUtils.BEGINNING;
+import static org.mtransit.commons.RegexUtils.DIGIT_CAR;
+import static org.mtransit.commons.RegexUtils.WHITESPACE_CAR;
+import static org.mtransit.commons.RegexUtils.atLeastOne;
+import static org.mtransit.commons.RegexUtils.group;
+import static org.mtransit.commons.StringUtils.EMPTY;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mtransit.commons.CharUtils;
@@ -14,13 +21,6 @@ import org.mtransit.parser.mt.data.MAgency;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
-
-import static org.mtransit.commons.RegexUtils.BEGINNING;
-import static org.mtransit.commons.RegexUtils.DIGIT_CAR;
-import static org.mtransit.commons.RegexUtils.WHITESPACE_CAR;
-import static org.mtransit.commons.RegexUtils.atLeastOne;
-import static org.mtransit.commons.RegexUtils.group;
-import static org.mtransit.commons.StringUtils.EMPTY;
 
 // https://exo.quebec/en/about/open-data
 public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
@@ -68,6 +68,28 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	@Override
 	public boolean defaultRouteIdEnabled() {
 		return true;
+	}
+
+	@Override
+	public long getRouteId(@NotNull GRoute gRoute) { // route ID used to target Twitter news & GTFS RT
+		final String rsn = gRoute.getRouteShortName();
+		if (!CharUtils.isDigitsOnly(rsn)) {
+			switch (rsn) {
+			case "VH":
+				return 1L;
+			case "SJ":
+				return 4L;
+			case "SH":
+				return 3L;
+			case "CA":
+				return 5L;
+			case "MA":
+				return 6L;
+			default:
+				throw new MTLog.Fatal("Unexpected route short name for %s", gRoute.toStringPlus());
+			}
+		}
+		return super.getRouteId(gRoute);
 	}
 
 	@Override
@@ -146,38 +168,10 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 	@NotNull
 	@Override
 	public String getStopCode(@NotNull GStop gStop) {
-		if (FeatureFlags.F_EXPORT_GTFS_ID_HASH_INT) {
+		if (FeatureFlags.F_USE_GTFS_ID_HASH_INT) {
 			return EMPTY; // remove stop code (not visible on agency info) // super.getStopCode(gStop);
 		}
 		//noinspection deprecation
 		return gStop.getStopId(); // using stop ID as stop code (useful to match with GTFS real-time)
-	}
-
-	private static final String ZERO = "0";
-
-	private static final String A = "A";
-	private static final String B = "B";
-	private static final String C = "C";
-	private static final String D = "D";
-
-	@Override
-	public int getStopId(@NotNull GStop gStop) {
-		String stopCode = gStop.getStopCode();
-		if (stopCode.equals(ZERO)) {
-			throw new MTLog.Fatal("Unexpected stop ID %s!", gStop);
-		}
-		int stopId = Integer.parseInt(stopCode); // using stop code as stop ID
-		//noinspection deprecation
-		final String stopId1 = gStop.getStopId();
-		if (stopId1.endsWith(A)) {
-			return 1_000_000 + stopId;
-		} else if (stopId1.endsWith(B)) {
-			return 2_000_000 + stopId;
-		} else if (stopId1.endsWith(C)) {
-			return 3_000_000 + stopId;
-		} else if (stopId1.endsWith(D)) {
-			return 4_000_000 + stopId;
-		}
-		throw new MTLog.Fatal("Unexpected stop ID %s!", gStop);
 	}
 }
