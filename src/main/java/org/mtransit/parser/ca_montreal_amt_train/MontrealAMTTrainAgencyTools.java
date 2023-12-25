@@ -76,15 +76,15 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		if (!CharUtils.isDigitsOnly(rsn)) {
 			switch (rsn) {
 			case "VH":
-				return 1L;
+				return 11L;
 			case "SJ":
-				return 4L;
+				return 12L;
 			case "SH":
-				return 3L;
+				return 13L;
 			case "CA":
-				return 5L;
+				return 14L;
 			case "MA":
-				return 6L;
+				return 15L;
 			default:
 				throw new MTLog.Fatal("Unexpected route short name for %s", gRoute.toStringPlus());
 			}
@@ -94,24 +94,7 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public @NotNull String getRouteShortName(@NotNull GRoute gRoute) {
-		final String rsn = gRoute.getRouteShortName();
-		if (!CharUtils.isDigitsOnly(rsn)) {
-			switch (rsn) {
-			case "VH":
-				return "11";
-			case "SJ":
-				return "12";
-			case "SH":
-				return "13";
-			case "CA":
-				return "14";
-			case "MA":
-				return "15";
-			default:
-				throw new MTLog.Fatal("Unexpected route short name for %s", gRoute.toStringPlus());
-			}
-		}
-		return super.getRouteShortName(gRoute);
+		return String.valueOf(getRouteId(gRoute));
 	}
 
 	@Override
