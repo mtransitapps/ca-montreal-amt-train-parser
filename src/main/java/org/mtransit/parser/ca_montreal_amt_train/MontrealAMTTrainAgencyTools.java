@@ -157,4 +157,9 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		//noinspection deprecation
 		return gStop.getStopId(); // using stop ID as stop code (useful to match with GTFS real-time)
 	}
+
+	@Override
+	public int getStopId(@NotNull GStop gStop) {
+		return Integer.parseInt(gStop.getStopCode()); // use stop code as stop ID
+	}
 }
