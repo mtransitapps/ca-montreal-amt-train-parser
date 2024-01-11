@@ -1,16 +1,20 @@
 package org.mtransit.parser.ca_montreal_amt_train;
 
+import static org.mtransit.commons.RegexUtils.ANY;
 import static org.mtransit.commons.RegexUtils.BEGINNING;
 import static org.mtransit.commons.RegexUtils.DIGIT_CAR;
 import static org.mtransit.commons.RegexUtils.WHITESPACE_CAR;
+import static org.mtransit.commons.RegexUtils.any;
 import static org.mtransit.commons.RegexUtils.atLeastOne;
 import static org.mtransit.commons.RegexUtils.group;
+import static org.mtransit.commons.RegexUtils.matchGroup;
 import static org.mtransit.commons.StringUtils.EMPTY;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.mtransit.commons.CharUtils;
 import org.mtransit.commons.CleanUtils;
+import org.mtransit.commons.Cleaner;
 import org.mtransit.commons.FeatureFlags;
 import org.mtransit.parser.DefaultAgencyTools;
 import org.mtransit.parser.MTLog;
@@ -20,7 +24,6 @@ import org.mtransit.parser.mt.data.MAgency;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Pattern;
 
 // https://exo.quebec/en/about/open-data
 public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
@@ -72,29 +75,24 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 
 	@Override
 	public long getRouteId(@NotNull GRoute gRoute) { // route ID used to target Twitter news & GTFS RT
-		final String rsn = gRoute.getRouteShortName();
-		if (!CharUtils.isDigitsOnly(rsn)) {
-			switch (rsn) {
-			case "VH":
-				return 11L;
-			case "SJ":
-				return 12L;
-			case "SH":
-				return 13L;
-			case "CA":
-				return 14L;
-			case "MA":
-				return 15L;
-			default:
-				throw new MTLog.Fatal("Unexpected route short name for %s", gRoute.toStringPlus());
-			}
-		}
-		return super.getRouteId(gRoute);
+		return super.getRouteId(gRoute); // used for GTFS-RT
 	}
+
+	private static final Cleaner STARTS_WITH_RSN_ = new Cleaner(
+			BEGINNING + group(atLeastOne(DIGIT_CAR)) + WHITESPACE_CAR + "-" + WHITESPACE_CAR + group(any(ANY)),
+			matchGroup(1)
+	);
 
 	@Override
 	public @NotNull String getRouteShortName(@NotNull GRoute gRoute) {
-		return String.valueOf(getRouteId(gRoute));
+		String rsn = gRoute.getRouteShortName();
+		if (!CharUtils.isDigitsOnly(rsn)) {
+			rsn = STARTS_WITH_RSN_.clean(gRoute.getRouteLongNameOrDefault());
+		}
+		if (!CharUtils.isDigitsOnly(rsn)) {
+			throw new MTLog.Fatal("Unexpected route short name '%s' for %s", rsn, gRoute.toStringPlus());
+		}
+		return rsn;
 	}
 
 	@Override
@@ -107,27 +105,28 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		return true;
 	}
 
-	private static final Pattern STARTS_WITH_RSN_ = Pattern.compile(group(BEGINNING + atLeastOne(DIGIT_CAR)) + WHITESPACE_CAR + "-" + WHITESPACE_CAR);
-
 	@NotNull
 	@Override
-	public String cleanRouteLongName(@NotNull String result) {
-		result = CleanUtils.SAINT.matcher(result).replaceAll(CleanUtils.SAINT_REPLACEMENT);
-		result = STARTS_WITH_RSN_.matcher(result).replaceAll(EMPTY);
-		return CleanUtils.cleanLabelFR(result);
+	public String cleanRouteLongName(@NotNull String routeLongName) {
+		routeLongName = CleanUtils.SAINT.matcher(routeLongName).replaceAll(CleanUtils.SAINT_REPLACEMENT);
+		routeLongName = STARTS_WITH_RSN_.clean(routeLongName, matchGroup(2));
+		return CleanUtils.cleanLabelFR(routeLongName);
 	}
 
-	private static final Pattern MONT_SAINT_HILAIRE_ = CleanUtils.cleanWords("mont-saint-hilaire", "mont-st-hilaire");
-	private static final String MONT_SAINT_HILAIRE_REPLACEMENT = CleanUtils.cleanWordsReplacement("St-Hilaire");
+	private static final Cleaner MONT_SAINT_HILAIRE_ = new Cleaner(
+			Cleaner.matchWords("mont-saint-hilaire", "mont-st-hilaire"),
+			"St-Hilaire",
+			true
+	);
 
-	private static final Pattern STARTS_WITH_SLASH = Pattern.compile("(^[^/]+/( )?)", Pattern.CASE_INSENSITIVE);
+	private static final Cleaner STARTS_WITH_SLASH = new Cleaner("(^[^/]+/( )?)", true);
 
 	@NotNull
 	@Override
 	public String cleanTripHeadsign(@NotNull String tripHeading) {
-		tripHeading = MONT_SAINT_HILAIRE_.matcher(tripHeading).replaceAll(MONT_SAINT_HILAIRE_REPLACEMENT);
-		tripHeading = STARTS_WITH_SLASH.matcher(tripHeading).replaceAll(EMPTY);
-		tripHeading = GARE.matcher(tripHeading).replaceAll(EMPTY);
+		tripHeading = MONT_SAINT_HILAIRE_.clean(tripHeading);
+		tripHeading = STARTS_WITH_SLASH.clean(tripHeading);
+		tripHeading = GARE.clean(tripHeading);
 		return CleanUtils.cleanLabelFR(tripHeading);
 	}
 
@@ -136,12 +135,12 @@ public class MontrealAMTTrainAgencyTools extends DefaultAgencyTools {
 		return true;
 	}
 
-	private static final Pattern GARE = Pattern.compile("(gare )", Pattern.CASE_INSENSITIVE);
+	private static final Cleaner GARE = new Cleaner("(gare )", true);
 
 	@NotNull
 	@Override
 	public String cleanStopName(@NotNull String gStopName) {
-		gStopName = GARE.matcher(gStopName).replaceAll(EMPTY);
+		gStopName = GARE.clean(gStopName);
 		gStopName = CleanUtils.CLEAN_EN_DASHES.matcher(gStopName).replaceAll(CleanUtils.CLEAN_EN_DASHES_REPLACEMENT);
 		gStopName = CleanUtils.cleanBounds(Locale.FRENCH, gStopName);
 		gStopName = CleanUtils.cleanStreetTypesFRCA(gStopName);
